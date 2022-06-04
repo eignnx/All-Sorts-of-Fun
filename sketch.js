@@ -36,12 +36,12 @@ const initMethods = {
   "perlin noise": perlinNoise
 }
 
-let selectedSortName = Object.keys(sorts)[0]
+let selectedSortName = Object.keys(SORTS)[0]
 let selectedInitMethod = Object.keys(initMethods)[0]
 
 function initUI() {
   const algSelect = document.getElementById("alg-select")
-  for (const sortName of Object.keys(sorts)) {
+  for (const sortName of Object.keys(SORTS)) {
     const o = document.createElement("option")
     o.value = sortName
     o.textContent = sortName
@@ -84,7 +84,7 @@ function initSortRun() {
   setMessage("")
   N = +arrSizeInput.value
   array = randomArray(N)
-  sorter = sorts[selectedSortName](array)
+  sorter = SORTS[selectedSortName](array)
 }
 
 function setup() {
