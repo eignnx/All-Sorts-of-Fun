@@ -185,18 +185,6 @@ function* pseudomedian(arr, start=0, end=arr.length) {
   return closest.idx
 }
 
-const pivotSelects = {
-  simple: function*(arr, start, end) {
-    return start
-  },
-
-  medianOfThree: function* (arr, start, end) {
-    if (end-start < 3) return start
-    return yield* medianOfThree(arr, start, end-1)
-  },
-  
-  pseudomedian: pseudomedian,
-}
 
 function* medianOfThree(arr, first, last) {
   const mid = Math.floor((first + last) / 2)
@@ -220,4 +208,41 @@ function* medianOfThree(arr, first, last) {
   //     v3 >= v1 && v3 <= v2)
   else
     return last
+}
+
+const pivotSelects = {
+  simple: function*(arr, start, end) {
+    return start
+  },
+
+  medianOfThree: function* (arr, start, end) {
+    if (end-start < 3) return start
+    return yield* medianOfThree(arr, start, end-1)
+  },
+  
+  pseudomedian: pseudomedian,
+
+  Levimedian: function* (arr, start, end) {
+    let sum = 0
+    
+    for (let idx = start; idx < end; idx++) {
+      sum += arr[idx]
+      
+      yield {pink: [idx]}
+    }
+
+    let mean = sum/(end - start)
+    let median = {value: arr[start], idx: start}
+    
+    for (let idx = start; idx < end; idx++) {
+      const value = arr[idx]
+      if (abs(value - mean) < abs(median.value - mean)) {
+        median = {value: value, idx: idx}
+      }
+      
+      yield {pink: [idx], green: [median.idx]}
+    }
+
+    return median.idx
+  }
 }

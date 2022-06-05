@@ -5,4 +5,5 @@ const SORTS = {
   "median of 3 quicksort": quicksort(pivotSelects.medianOfThree),
   "pseudomedian quicksort": quicksort(pivotSelects.pseudomedian),
   "quick mean sort": quickMeanSort,
+  "Levimedian quicksort": quicksort(pivotSelects.Levimedian),
 }

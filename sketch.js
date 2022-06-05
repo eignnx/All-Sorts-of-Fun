@@ -141,9 +141,10 @@ function displayArray(arr, highlighted) {
 
 
 function randomArray(len) {
-  let array = []
+  const r = initMethods[selectedInitMethod]
+  const array = []
   for (let i = 0; i < len; i++) {
-    array.push(initMethods[selectedInitMethod]())
+    array.push(r(i))
   }
   return array
 }
