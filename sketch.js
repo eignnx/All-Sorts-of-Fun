@@ -25,19 +25,8 @@ function setMessage(m) {
   infoSection.textContent = m
 }
 
-let ticks = 0
-function perlinNoise() {
-  ticks++
-  return noise(ticks * PERLIN_NOISE_SCALE)
-}
-
-const initMethods = {
-  "true random": () => random(0, 1),
-  "perlin noise": perlinNoise
-}
-
 let selectedSortName = Object.keys(SORTS)[0]
-let selectedInitMethod = Object.keys(initMethods)[0]
+let selectedInitMethod = Object.keys(INIT_METHODS)[0]
 
 function initUI() {
   const algSelect = document.getElementById("alg-select")
@@ -52,7 +41,7 @@ function initUI() {
   }
 
   const initMethodSelect = document.getElementById("init-method-select")
-  for (const initMethodName of Object.keys(initMethods)) {
+  for (const initMethodName of Object.keys(INIT_METHODS)) {
     const o = document.createElement("option")
     o.value = initMethodName
     o.textContent = initMethodName
@@ -78,6 +67,7 @@ function initSortRun() {
   if (SEED !== null) {
     randomSeed(SEED)
     noiseSeed(SEED)
+    ticks = 0
   }
 
   score = 0
@@ -141,7 +131,7 @@ function displayArray(arr, highlighted) {
 
 
 function randomArray(len) {
-  const r = initMethods[selectedInitMethod]
+  const r = INIT_METHODS[selectedInitMethod]
   const array = []
   for (let i = 0; i < len; i++) {
     array.push(r(i))
