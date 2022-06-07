@@ -81,6 +81,7 @@ const vueApp = Vue.createApp({
         p.background(BG_COLOR)
         p.noLoop()
         p.strokeCap(p.SQUARE)
+        p.noSmooth()
       }
     
       p.draw = () => {
