@@ -72,7 +72,7 @@ const vueApp = Vue.createApp({
       p = pParam
       
       const FRAMERATE = 60
-      const BG_COLOR = "#e8f7ff"
+      const BG_COLOR = p.color("#e8f7ff")
       
       p.setup = () => {
         p.createCanvas(p.windowWidth, 400)
