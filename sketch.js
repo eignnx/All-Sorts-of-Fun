@@ -38,10 +38,10 @@ const vueApp = Vue.createApp({
       </button>
     </div>
   </section>
-  <article>
+  <section id="messages-section">
     <button @click="messages = []" v-if="messages.length > 0">Clear</button>
     <p v-for="msg in messages">{{ msg }}</p>
-  </article>
+  </section>
 </section>
   `,
 

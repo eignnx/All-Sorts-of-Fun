@@ -11,7 +11,7 @@ html, body {
   width: 100vw !important;
 }
 
-#ui-section > div {
+#ui-section > div, #messages-section > div {
   margin: 1em;
 }
 
@@ -20,5 +20,6 @@ label {
 }
 
 button {
-  padding: 1em;
+  padding-inline: 1em;
+  padding-block: 0.5em;
 }
