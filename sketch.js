@@ -1,9 +1,166 @@
-p5.disableFriendlyErrors = true
+const vueApp = Vue.createApp({
+  template: `
+<section>
+  <section id="ui-section">
+    <div>
+      <label for="arr-size">Array Size</label>
+      <input
+        id="arr-size"
+        type="number"
+        required
+        v-model.number="arrSize"
+      >
+    </div>
+    
+    <div>
+      <label for="alg-select">Sort Algorithm</label>
+      <select
+        id="alg-select"
+        v-model="sortName"
+      >
+        <option v-for="name in sortNames">{{ name }}</option>
+      </select>
+    </div>
+  
+    <div>
+      <label for="init-method-select">Array Initialization Method</label>
+      <select
+        id="init-method-select"
+        v-model="initMethod"
+      >
+        <option v-for="name in initMethodNames">{{ name }}</option>
+      </select>
+    </div>
+  
+    <div>
+      <button @click="startStop">
+        {{ running ? "Stop" : "Start" }}
+      </button>
+    </div>
+  </section>
+  <article>
+    <button @click="messages = []" v-if="messages.length > 0">Clear</button>
+    <p v-for="msg in messages">{{ msg }}</p>
+  </article>
+</section>
+  `,
 
-const FRAMERATE = 60
+  data: () => ({
+    sketch: null,
+    p: null,
+    array: null,
+    sorter: null,
+    score: 0,
+    arrSize: 100,
+    n: 100,
+    sortName: "basic bubblesort",
+    initMethod: "true random",
+    perlinNoiseScale: 0.06,
+    running: false,
+    messages: [],
+  }),
+  
+  computed: {
+    sortNames: () => Object.keys(SORTS),
+    initMethodNames: () => Object.keys(INIT_METHODS(this.n)),
+  },
+  
+  mounted() {
+    const sketch = p => {
 
-let N = 100
-const PERLIN_NOISE_SCALE = 0.06
+      // Let's just hold onto this...
+      this.p = p
+      
+      const FRAMERATE = 50
+      const BG_COLOR = "#e8f7ff"
+      
+      p.setup = () => {
+        p.createCanvas(p.windowWidth, 400)
+        p.noStroke()
+        p.frameRate(FRAMERATE)
+        p.background(BG_COLOR)
+        p.noLoop()
+      }
+    
+      p.draw = () => {
+        if (!p.isLooping()) return
+        
+        p.background(BG_COLOR)
+        const {value, done} = this.sorter.next()
+        
+        if (done) {
+          this.startStop()
+          this.addMessage(`final score = ${100 * this.score}`)
+          this.displayArray(p, this.array, {})
+        } else {
+          if (value.hasOwnProperty("score")) {
+            this.score += value.score
+            delete value.score
+          }
+          this.displayArray(p, this.array, value)
+        }
+      }
+    }
+    
+    // p5.disableFriendlyErrors = true
+    this.sketch = new p5(sketch, "p5-canvas-container")
+  },
+
+  methods: {
+    addMessage(msg) {
+      this.messages.push(msg)
+    },
+
+    startStop() {
+      if (!this.running) {
+        this.initSortRun()
+        this.p.loop()
+      } else {
+        this.p.noLoop()
+      }
+      this.running = !this.running
+    },
+    
+    initSortRun() {
+      if (SEED !== null) {
+        this.p.randomSeed(SEED)
+        this.p.noiseSeed(SEED)
+        this.ticks = 0
+      }
+
+      this.n = this.arrSize
+      this.score = 0
+      const selectedInitMethod = INIT_METHODS(this.n)[this.initMethod]
+      this.array = randomArray(this.n, selectedInitMethod)
+      this.sorter = SORTS[this.sortName](this.array)
+    },
+    
+    displayArray(p, arr, highlighted) {
+      const w = p.width / this.n
+      p.noStroke()
+      for (const [idx, ele] of arr.entries()) {
+        
+        p.colorMode(p.HSB, 100)
+        p.fill((1-ele) * 100, 35, 100)
+        p.colorMode(p.RGB)
+        
+        for (const [color, indices] of Object.entries(highlighted)) {
+          if (indices.includes(idx)) {
+            p.fill(color)
+          }
+        }
+        
+        const x = idx * w
+        const h = ele * p.height
+        p.rect(x, p.height, w, -h)
+        
+        p.fill(0)
+        p.rect(x, p.height - h, w, w)
+      }
+    }
+  },
+}).mount('#vue-app-root')
+
 
 const SEED = (
   null
@@ -11,127 +168,8 @@ const SEED = (
   // 89234759283745
 )
 
-const BG_COLOR = "#e8f7ff"
 
-let array
-let sorter
-let score = 0
-
-const arrSizeInput = document.getElementById("arr-size")
-const playModeBtn = document.getElementById("play-mode-btn")
-const infoSection = document.getElementById("info-section")
-
-function setMessage(m) {
-  infoSection.textContent = m
-}
-
-let selectedSortName = Object.keys(SORTS)[0]
-let selectedInitMethod = Object.keys(INIT_METHODS)[0]
-
-function initUI() {
-  const algSelect = document.getElementById("alg-select")
-  for (const sortName of Object.keys(SORTS)) {
-    const o = document.createElement("option")
-    o.value = sortName
-    o.textContent = sortName
-    algSelect.appendChild(o)
-  }
-  algSelect.onchange = function() {
-    selectedSortName = this.value
-  }
-
-  const initMethodSelect = document.getElementById("init-method-select")
-  for (const initMethodName of Object.keys(INIT_METHODS)) {
-    const o = document.createElement("option")
-    o.value = initMethodName
-    o.textContent = initMethodName
-    initMethodSelect.appendChild(o)
-  }
-  initMethodSelect.onchange = function() {
-    selectedInitMethod = this.value
-  }
-
-  playModeBtn.onclick = function() {
-    if (this.textContent === "Start") {
-      this.textContent = "Stop"
-      initSortRun()
-      loop()
-    } else if (this.textContent === "Stop") {
-      this.textContent = "Start"
-      noLoop()
-    }
-  }
-}
-
-function initSortRun() {
-  if (SEED !== null) {
-    randomSeed(SEED)
-    noiseSeed(SEED)
-    ticks = 0
-  }
-
-  score = 0
-  setMessage("")
-  N = +arrSizeInput.value
-  array = randomArray(N)
-  sorter = SORTS[selectedSortName](array)
-}
-
-function setup() {
-  createCanvas(400, 400).parent("p5-canvas-container")
-
-  initUI()
-  
-  noStroke()
-  frameRate(FRAMERATE)
-
-  noLoop()
-}
-
-function draw() {
-  background(BG_COLOR)
-  const {value, done} = sorter.next()
-  if (done) {
-    noLoop()
-    playModeBtn.textContent = "Start"
-    setMessage(`final score = ${nf(100 * score, 2, 2)}`)
-    displayArray(array, {})
-  } else {
-    if (value.hasOwnProperty("score")) {
-      score += value.score
-      delete value.score
-    }
-    displayArray(array, value)
-  }
-}
-
-function displayArray(arr, highlighted) {
-  const w = width / N
-  noStroke()
-  for (const [idx, ele] of arr.entries()) {
-    
-    colorMode(HSB, 100)
-    fill((1-ele) * 100, 35, 100)
-    colorMode(RGB)
-    
-    for (const [color, indices] of Object.entries(highlighted)) {
-      if (indices.includes(idx)) {
-        fill(color)
-      }
-    }
-    
-    const x = idx * w
-    const h = ele * height
-    rect(x, height, w, -h)
-    
-    fill(0)
-    rect(x, height-h, w, w)
-  }
-}
-
-
-function randomArray(len) {
-  const r = INIT_METHODS[selectedInitMethod]
+function randomArray(len, r) {
   const array = []
   for (let i = 0; i < len; i++) {
     array.push(r(i))

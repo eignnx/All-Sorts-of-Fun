@@ -5,43 +5,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width">
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/addons/p5.sound.min.js"></script>
+<!--     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/addons/p5.sound.min.js"></script> -->
+    <script src="https://unpkg.com/vue@3"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
     <main>
-      
       <div id="p5-canvas-container"></div>
-
-      <section id="ui-section">
-        <div>
-          <label for="arr-size">Array Size</label>
-          <input type="number" id="arr-size" value="100" required>
-        </div>
-        
-        <div>
-          <label for="alg-select">Sort Algorithm</label>
-          <select name="alg-name" id="alg-select"></select>
-        </div>
-
-        <div>
-          <label for="init-method-select">Array Initialization Method</label>
-          <select name="init-method" id="init-method-select"></select>
-        </div>
-
-        <div>
-          <button id="play-mode-btn">Start</button>
-        </div>
-      </section>
-
-      <section id="info-section"></section>
-      
+      <div id="vue-app-root"></div>
     </main>
-    <script src="utils.js"></script>
-    <script src="sorts/bubble.js"></script>
-    <script src="sorts/quick.js"></script>
-    <script src="sorts/sorts.js"></script>
-    <script src="init_methods.js"></script>
-    <script src="sketch.js"></script>
   </body>
+  <script src="utils.js"></script>
+  <script src="sorts/bubble.js"></script>
+  <script src="sorts/quick.js"></script>
+  <script src="sorts/sorts.js"></script>
+  <script src="init_methods.js"></script>
+  <script src="sketch.js"></script>
 </html>

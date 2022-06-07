@@ -16,8 +16,6 @@ function* basicBubble(arr) {
       } else {
         yield {"rgb(165,165,217)": [i]}
       }
-      
-      
     }
   } 
 }

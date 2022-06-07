@@ -45,12 +45,9 @@ function quicksort(selectPivot) {
     {
       const len = end - start
       const small = finalPivotIdx - start
-      const large = len - small
-      const score = 2 / (1 + exp(30 * sq(small/len - 0.5))) * (len / N)
+      const sq = x => x * x
+      const score = 2 / (1 + Math.exp(30 * sq(small/len - 0.5))) * (len / 100) // TODO: replace 100 with N
       yield {score}
-      console.log(
-        `split score = ${nf(100 * score, 2, 2)} (${small}:${large})`
-      )
     }
     
     return finalPivotIdx
@@ -169,7 +166,7 @@ function* pseudomedian(arr, start=0, end=arr.length) {
   }
   
   const pseudomed = (biggestMin.value + smallestMax.value) / 2
-  const getDiff = idx => abs(pseudomed - arr[idx])
+  const getDiff = idx => Math.abs(pseudomed - arr[idx])
   
   let closest = {diff: getDiff(start), idx: start}
   
@@ -211,7 +208,7 @@ function* medianOfThree(arr, first, last) {
 }
 
 const pivotSelects = {
-  simple: function*(arr, start, end) {
+  simple: function*(_arr, start, _end) {
     return start
   },
 
@@ -236,7 +233,7 @@ const pivotSelects = {
     
     for (let idx = start; idx < end; idx++) {
       const value = arr[idx]
-      if (abs(value - mean) < abs(median.value - mean)) {
+      if (Math.abs(value - mean) < Math.abs(median.value - mean)) {
         median = {value: value, idx: idx}
       }
       
