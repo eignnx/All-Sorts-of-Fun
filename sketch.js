@@ -52,9 +52,9 @@ const vueApp = Vue.createApp({
 
   data: () => ({
     score: 0,
-    arrSize: 1000,
+    arrSize: 512,
     n: null,
-    sortName: "simple pivot quicksort",
+    sortName: "insertion sort",
     initMethod: "true random",
     running: false,
     messages: [],
@@ -88,18 +88,15 @@ const vueApp = Vue.createApp({
         if (!p.isLooping()) return
         
         p.background(BG_COLOR)
+        
         const {value, done} = sorter.next()
         
-        if (done) {
+        if (!done) {
+          this.displayArray(p, array, value)
+        } else {
           this.startStop()
           this.addMessage(`final score = ${100 * this.score}`)
-          this.displayArray(p, array, {})
-        } else {
-          if (value.hasOwnProperty("score")) {
-            this.score += value.score
-            delete value.score
-          }
-          this.displayArray(p, array, value)
+          this.displayArray(p, array, [])
         }
       }
     }
@@ -137,12 +134,10 @@ const vueApp = Vue.createApp({
       sorter = SORTS[this.sortName](array)
     },
     
-    displayArray(p, arr, highlighted) {
+    displayArray(p, arr, tags) {
 
       const colors = {}
-      for (const [c, indices] of Object.entries(highlighted)) {
-        indices.forEach(idx => colors[idx] = p.color(c))
-      }
+      tags.forEach(tag => tag.apply(colors))
       
       const w = p.width / this.n
       p.strokeWeight(w)

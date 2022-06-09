@@ -5,25 +5,25 @@ function quicksort(selectPivot) {
     const pivot = arr[pivotIdx]
     
     arr.swap(start, pivotIdx)
-    const tmpPivotIdx = start
+    yield [new Swap(start, pivotIdx)]
     
-    yield {"magenta": [start, pivotIdx]}
+    const tmpPivotIdx = start
     
     let poor = start + 1
     let rich = end - 1
     
     while (poor < rich) {
       if (arr[poor] <= pivot) {
+        yield [new Bound(poor-1), new Bound(rich), new Pivot(tmpPivotIdx)]
         poor++
-        yield {"cyan": [poor-1, rich], "green": [tmpPivotIdx]}
       } else if (arr[rich] > pivot) {
+        yield [new Bound(poor), new Bound(rich+1), new Pivot(tmpPivotIdx)]
         rich--
-        yield {"cyan": [poor, rich+1], "green": [tmpPivotIdx]}
       } else {
         arr.swap(poor, rich)
+        yield [new Swap(poor, rich), new Pivot(tmpPivotIdx)]
         poor++
         rich--
-        yield {"red": [poor, rich], "green": [tmpPivotIdx]}
       }
     }
     
@@ -40,14 +40,14 @@ function quicksort(selectPivot) {
     }
     
     arr.swap(tmpPivotIdx, finalPivotIdx)  
-    yield {"magenta": [tmpPivotIdx, finalPivotIdx]}
+    yield [new Swap(tmpPivotIdx, finalPivotIdx)]
     
     {
       const len = end - start
       const small = finalPivotIdx - start
       const sq = x => x * x
       const score = 2 / (1 + Math.exp(30 * sq(small/len - 0.5))) * (len / 100) // TODO: replace 100 with N
-      yield {score}
+      // yield {score}
     }
     
     return finalPivotIdx
@@ -56,9 +56,9 @@ function quicksort(selectPivot) {
   function* qs(arr, start, end) {
     if (end-start < 2) return
     const pivotIdx = yield* selectPivot(arr, start, end)
-    yield {"green": [pivotIdx]}
+    yield [new Pivot(pivotIdx)]
     const newPivotIdx = yield* partition(arr, start, end, pivotIdx)
-    yield {"green": [newPivotIdx]}
+    yield [new Pivot(newPivotIdx)]
     yield* qs(arr, start, newPivotIdx)
     yield* qs(arr, newPivotIdx+1, end)
   }
@@ -77,16 +77,16 @@ function quickMeanSort(arr) {
     
     while (poor < rich) {
       if (arr[poor] <= pivot) {
+        yield [new Bound(poor-1), new Bound(rich)]
         poor++
-        yield {"cyan": [poor-1, rich]}
       } else if (arr[rich] > pivot) {
+        yield [new Bound(poor), new Bound(rich+1)]
         rich--
-        yield {"cyan": [poor, rich+1]}
       } else {
         arr.swap(poor, rich)
+        yield [new Swap(poor, rich), new Pivot(tmpPivotIdx)]
         poor++
         rich--
-        yield {"red": [poor, rich]}
       }
     }
     
@@ -133,6 +133,7 @@ function* pseudomedian(arr, start=0, end=arr.length) {
   let winMax = {value: arr[start], idx: start}
   
   for (let idx = start + 1; idx < w; idx++) {
+    yield [new Window(start, idx)]
     const value = arr[idx]
     if (value < winMin.value) {
       winMin = {value, idx}
@@ -162,7 +163,7 @@ function* pseudomedian(arr, start=0, end=arr.length) {
       }
     }
     
-    yield {"yellow": [idx - w, idx]}
+    yield [new Window(idx-w, idx)]
   }
   
   const pseudomed = (biggestMin.value + smallestMax.value) / 2
@@ -176,24 +177,26 @@ function* pseudomedian(arr, start=0, end=arr.length) {
       closest = {diff, idx}
     }
     
-    yield {"yellow": [idx], "orange": [closest.idx]}
+    yield [new Scan(idx), new Min(closest.idx)]
   }
   
   return closest.idx
 }
 
 
-function* medianOfThree(arr, first, last) {
-  const mid = Math.floor((first + last) / 2)
+function* medianOfThree(arr, start, end) {
+  if (end-start < 3) return start
   
-  const [v1, v2, v3]  = [arr[first], arr[mid], arr[last]]
+  const mid = Math.floor((start + end-1) / 2)
   
-  yield {"yellow": [first, mid, last]}
+  const [v1, v2, v3]  = [arr[start], arr[mid], arr[end-1]]
+  
+  yield [start, mid, end-1].map(i => new Scan(i))
   
   // `v1` is median
   if (v1 >= v2 && v1 <= v3 ||
       v1 >= v3 && v1 <= v2)
-    return first
+    return start
   
   // `v2` is median
   if (v2 >= v1 && v2 <= v3 ||
@@ -204,7 +207,13 @@ function* medianOfThree(arr, first, last) {
   // if (v3 >= v2 && v3 <= v1 ||
   //     v3 >= v1 && v3 <= v2)
   else
-    return last
+    return end-1
+}
+
+function* medianOfNine(arr, first, last) {
+  if (arr.length < 9) {
+    return yield* medianOfThree
+  }
 }
 
 const pivotSelects = {
@@ -212,12 +221,11 @@ const pivotSelects = {
     return start
   },
 
-  medianOfThree: function* (arr, start, end) {
-    if (end-start < 3) return start
-    return yield* medianOfThree(arr, start, end-1)
-  },
+  medianOfThree,
+
+  medianOfNine,
   
-  pseudomedian: pseudomedian,
+  pseudomedian,
 
   Levimedian: function* (arr, start, end) {
     let sum = 0
@@ -225,7 +233,7 @@ const pivotSelects = {
     for (let idx = start; idx < end; idx++) {
       sum += arr[idx]
       
-      yield {pink: [idx]}
+      yield [new Scan(idx)]
     }
 
     let mean = sum/(end - start)
@@ -237,7 +245,7 @@ const pivotSelects = {
         median = {value: value, idx: idx}
       }
       
-      yield {pink: [idx], green: [median.idx]}
+      yield [new Scan(idx), new Min(median.idx)]
     }
 
     return median.idx
