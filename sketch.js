@@ -46,18 +46,13 @@ const vueApp = Vue.createApp({
       </button>
     </div>
   </section>
-  <section id="messages-section">
-    <button @click="messages = []" v-if="messages.length > 0">Clear</button>
-    <button @click="sectionBreak" v-if="messages.length > 0">Section Break</button>
-    <p v-for="msg in messages">{{ msg }}</p>
-  </section>
   <section>
-    <details v-for="(sizes, sortName) in runData.data">
-      <summary>{{ sortName }}</summary>
-      <details v-for="(initMethods, arrSize) in sizes">
-        <summary>{{ arrSize }} elements</summary>
-        <details v-for="(runs, initMethod) in initMethods">
-          <summary>{{ initMethod }}</summary>
+    <details v-for="(initMethods, arrSize) in runData.data" open>
+      <summary>{{ arrSize }} elements</summary>
+      <details v-for="(sorts, initMethod) in initMethods" open>
+        <summary>{{ initMethod }}</summary>
+        <details v-for="(runs, sortName) in sorts" open>
+          <summary>{{ sortName }}</summary>
           <table>
             <thead>
               <tr>
@@ -76,7 +71,7 @@ const vueApp = Vue.createApp({
                 <th>Averages</th>
               </tr>
               <tr>
-                <td v-for="(avg, attr) in runData.getAverages(sortName, arrSize, initMethod)">{{avg}}</td>
+                <td v-for="(avg, attr) in runData.getAverages(arrSize, initMethod, sortName)">{{avg}}</td>
               </tr>
             </tfoot>
           </table>
@@ -174,7 +169,7 @@ const vueApp = Vue.createApp({
 
     addRunData() {
       const {sortName, arrSize, initMethod, ...info} = this.getRunData()
-      this.runData.addRunResults(sortName, arrSize, initMethod, info)
+      this.runData.addRunResults(arrSize, initMethod, sortName, info)
     },
     
     addMessage(msg) {
