@@ -1,11 +1,12 @@
 const MIN_COLOR = "#e68612" // Orange colored
 
-class Min {
+class Min extends Tag {
   constructor(i) {
+    super()
     this.i = i
   }
 
-  apply(indices) {
-    indices[this.i] = MIN_COLOR
+  apply(state) {
+    state.colors[this.i] = MIN_COLOR
   }
 }

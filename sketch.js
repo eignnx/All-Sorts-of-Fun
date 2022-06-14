@@ -1,3 +1,6 @@
+const init_bg_color = "#e8f7ff"
+const FRAMERATE = 100
+
 let array = null
 let p = null
 let sorter = null
@@ -45,19 +48,54 @@ const vueApp = Vue.createApp({
   </section>
   <section id="messages-section">
     <button @click="messages = []" v-if="messages.length > 0">Clear</button>
+    <button @click="sectionBreak" v-if="messages.length > 0">Section Break</button>
     <p v-for="msg in messages">{{ msg }}</p>
+  </section>
+  <section>
+    <details v-for="(sizes, sortName) in runData.data">
+      <summary>{{ sortName }}</summary>
+      <details v-for="(initMethods, arrSize) in sizes">
+        <summary>{{ arrSize }} elements</summary>
+        <details v-for="(runs, initMethod) in initMethods">
+          <summary>{{ initMethod }}</summary>
+          <table>
+            <thead>
+              <tr>
+                <th v-for="(_, attr) in runs[0]">{{attr}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="run in runs">
+                <td v-for="(value, attr) in run">
+                  {{value}}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot v-if="runs.length > 1">
+              <tr>
+                <th>Averages</th>
+              </tr>
+              <tr>
+                <td v-for="(avg, attr) in runData.getAverages(sortName, arrSize, initMethod)">{{avg}}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </details>
+      </details>
+    </details>
   </section>
 </section>
   `,
 
   data: () => ({
-    score: 0,
-    arrSize: 512,
+    arrSize: 256,
     n: null,
-    sortName: "insertion sort",
+    sortName: "random pivot quicksort",
     initMethod: "true random",
     running: false,
     messages: [],
+    runData: new Data(),
+    sortState: null,
   }),
   
   computed: {
@@ -71,8 +109,10 @@ const vueApp = Vue.createApp({
       // Let's just hold onto this...
       p = pParam
       
-      const FRAMERATE = 60
-      const BG_COLOR = p.color("#e8f7ff")
+      const BG_COLOR = p.color(init_bg_color)
+
+      let nextSendValue = undefined
+      let done = false
       
       p.setup = () => {
         p.createCanvas(p.windowWidth, 400)
@@ -87,16 +127,28 @@ const vueApp = Vue.createApp({
       p.draw = () => {
         if (!p.isLooping()) return
         
-        p.background(BG_COLOR)
+        let cmd = null
+
+        while (!done && !(cmd instanceof ShowFrame)) {
+          const status = sorter.next(nextSendValue)
+          done = status.done
+          cmd = status.value
+
+          if (!done) {
+            // nextSendValue will contain a value computed (if any) by a Cmd's
+            // apply method, and fed back to the generator. `nextSendValue`
+            // will be the value returned by a `yield` expression.
+            nextSendValue = cmd.apply(this.sortState)
+          }
+        }
+      
+        this.displayArray(p, this.sortState.arr)
         
-        const {value, done} = sorter.next()
-        
-        if (!done) {
-          this.displayArray(p, array, value)
-        } else {
+        if (done) {
           this.startStop()
-          this.addMessage(`final score = ${100 * this.score}`)
-          this.displayArray(p, array, [])
+          nextSendValue = undefined
+          done = false
+          this.addRunData()
         }
       }
     }
@@ -106,8 +158,39 @@ const vueApp = Vue.createApp({
   },
 
   methods: {
+    resetSortState() {
+      this.sortState = {
+        arrSize: this.arrSize,
+        sortName: this.sortName,
+        initMethod: this.initMethod,
+        colors: Array(this.n).fill(null),
+        comparisons: 0,
+        loads: 0,
+        stores: 0,
+        swaps: 0,
+        arr: array,
+      }
+    },
+
+    addRunData() {
+      const {sortName, arrSize, initMethod, ...info} = this.getRunData()
+      this.runData.addRunResults(sortName, arrSize, initMethod, info)
+    },
+    
     addMessage(msg) {
       this.messages.push(msg)
+    },
+
+    getRunData() {
+      return sliceObject(this.sortState, [
+        "arrSize",
+        "sortName",
+        "initMethod",
+        "comparisons",
+        "loads",
+        "stores",
+        "swaps",
+      ])
     },
 
     startStop() {
@@ -128,39 +211,58 @@ const vueApp = Vue.createApp({
       }
 
       this.n = this.arrSize
-      this.score = 0
       const selectedInitMethod = INIT_METHODS(this.n)[this.initMethod]
       array = randomArray(this.n, selectedInitMethod)
       sorter = SORTS[this.sortName](array)
+      this.resetSortState()
     },
     
-    displayArray(p, arr, tags) {
-
-      const colors = {}
-      tags.forEach(tag => tag.apply(colors))
-      
+    displayArray(p, arr) {
       const w = p.width / this.n
-      p.strokeWeight(w)
-      
-      for (const [idx, ele] of arr.entries()) {
-        
-        const c = colors[idx]
-        
-        if (c !== undefined) {
-          p.stroke(c)
-        } else {
-          p.colorMode(p.HSB, 100)
-          p.stroke((1-ele) * 100, 35, 100)
-          p.colorMode(p.RGB)
-        }
-        
+
+      const eraseBar = idx => {
+        if (idx < 0 || idx >= arr.length) return
+        const ele = arr[idx]
         const x = idx * w
         const h = ele * p.height
         
+        // Erase this element and half of each of its neighbors
+        p.strokeWeight(w * 2)
+        p.stroke(init_bg_color)
+        p.line(x, p.height, x, 0)
+      }
+
+      
+      const renderBar = idx => {
+        if (idx < 0 || idx >= arr.length) return
+        const ele = arr[idx]
+        const h = ele * p.height
+        const x = idx * w
+        const c = this.sortState.colors[idx] ?? null
+        
+        if (c === null) {
+          p.colorMode(p.HSB, 100)
+          p.stroke((1 - ele) * 100, 35, 100)
+          p.colorMode(p.RGB)
+          delete this.sortState.colors[idx]
+        } else {
+          p.stroke(c)
+          this.sortState.colors[idx] = null
+        }
+
+        p.strokeWeight(w)
         p.line(x, p.height, x, p.height - h)
         
         p.stroke(0)
         p.point(x, p.height - h)
+      }
+
+      for (const idxStr in {...this.sortState.colors}) {
+        const idx = parseInt(idxStr)
+        eraseBar(idx)
+        renderBar(idx)
+        renderBar(idx - 1)
+        renderBar(idx + 1)
       }
     }
   },

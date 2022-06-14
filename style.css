@@ -23,3 +23,23 @@ button {
   padding-inline: 1em;
   padding-block: 0.5em;
 }
+
+details {
+  border: 2px solid grey;
+  border-radius: 3px;
+}
+
+details > * {
+  margin-inline-start: 2ch;
+}
+
+summary {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size-adjust: larger;
+  font-weight: bold;
+  font-variant: small-caps;
+}
+
+th, tf {
+  border: 1px solid black;
+}

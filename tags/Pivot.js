@@ -1,11 +1,12 @@
 const PIVOT_COLOR = "#21bf53" // Green colored
 
-class Pivot {
+class Pivot extends Tag {
   constructor(i) {
+    super()
     this.i = i
   }
 
-  apply(indices) {
-    indices[this.i] = PIVOT_COLOR
+  apply(state) {
+    state.colors[this.i] = PIVOT_COLOR
   }
 }

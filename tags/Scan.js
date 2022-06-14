@@ -1,11 +1,12 @@
-const SCAN_COLOR = "#ebc334" // Gold colored
+const SCAN_COLOR = "#ffa600" // Gold colored
 
-class Scan {
+class Scan extends Tag {
   constructor(i) {
+    super()
     this.i = i
   }
 
-  apply(indices) {
-    indices[this.i] = SCAN_COLOR
+  apply(state) {
+    state.colors[this.i] = SCAN_COLOR
   }
 }

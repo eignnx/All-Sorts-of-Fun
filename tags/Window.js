@@ -1,14 +1,15 @@
 const WINDOW_COLOR = "#2163bf" // Blue colored
 
-class Window {
+class Window extends Tag {
   constructor(start, end) {
+    super()
     this.start = start
     this.end = end
   }
 
-  apply(indices) {
+  apply(state) {
     for (let i = this.start; i < this.end; i++) {
-      indices[i] = WINDOW_COLOR
+      state.colors[i] = WINDOW_COLOR
     }
   }
 }

@@ -1,11 +1,12 @@
 const BOUND_COLOR = "#c120c9" // Magenta colored
 
-class Bound {
+class Bound extends Tag {
   constructor(i) {
+    super()
     this.i = i
   }
 
-  apply(indices) {
-    indices[this.i] = BOUND_COLOR
+  apply(state) {
+    state.colors[this.i] = BOUND_COLOR
   }
 }

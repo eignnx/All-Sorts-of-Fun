@@ -1,45 +1,43 @@
 function* basicBubble(arr) {
-  const len = arr.length
+  const len = yield getLength()
   
-  if (len < 2) {
-    return arr
-  }
+  if (len < 2) return
   
   let checkAgain = true
+  
   while (checkAgain) {
     checkAgain = false
     for (let i = 1; i < len; i++) {
-      if (arr[i-1] > arr[i]) {
-        arr.swap(i-1, i)
-        yield [new Swap(i-1, i)]
+      if (yield gt(yield load(i-1), yield load(i))) {
+        yield swap(i-1, i)
         checkAgain = true
+        yield showFrame()
       } else {
-        yield [new Scan(i)]
+        yield showFrame(new Scan(i))
       }
     }
   } 
 }
 
-function* betterBubble(arr) {
-    const len = arr.length
-    
-    if (len < 2) {
-      return arr
-    }
-    
-    let lastSortedIdx = len; 
-    let checkAgain = true
-    while (checkAgain) {
-      checkAgain = false
-      for (let i = 1; i < lastSortedIdx; i++) {
-        if (arr[i-1] > arr[i]) {
-          arr.swap(i-1, i)
-          yield [new Swap(i-1, i), new Bound(lastSortedIdx)]
-          checkAgain = true
-        } else {
-        yield [new Scan(i), new Bound(lastSortedIdx)]
-        }
+function* betterBubble() {
+  const len = yield getLength()
+  
+  if (len < 2) return
+  
+  let lastSortedIdx = len; 
+  let checkAgain = true
+
+  while (checkAgain) {
+    checkAgain = false
+    for (let i = 1; i < lastSortedIdx; i++) {
+      if (yield gt(yield load(i-1), yield load(i))) {
+        yield swap(i-1, i)
+        checkAgain = true
+        yield showFrame(new Bound(lastSortedIdx))
+      } else {
+        yield showFrame(new Scan(i), new Bound(lastSortedIdx))
       }
-      lastSortedIdx--
-    } 
+    }
+    lastSortedIdx--
   }
+}
