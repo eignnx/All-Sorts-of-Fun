@@ -5,12 +5,20 @@ function completeCoro(coro) {
   }
 }
 
-function* mapYielded(gen, fn) {
+function* mapYielded(coro, fn) {
   let nextSendValue = undefined
   while (true) {
-    const {value, done} = gen.next(nextSendValue)
+    const {value, done} = coro.next(nextSendValue)
     if (done) return value
     nextSendValue = yield fn(value)
+  }
+}
+
+Object.getPrototypeOf(function*(){}).thenDoPass = function(secondGeneratorFn) {
+  const firstGeneratorFn = this
+  return function*(...args) {
+    yield* firstGeneratorFn(...args)
+    return yield* secondGeneratorFn(...args)
   }
 }
 
@@ -47,3 +55,4 @@ String.prototype.simpleHashCode = function() {
 
   return hash | 0
 }
+
