@@ -14,6 +14,7 @@ html, body {
   padding: 0;
   margin: 0;
   width: 100vw !important;
+  height: 100vh !important;
 }
 
 #ui-section > div, #messages-section > div {

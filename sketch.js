@@ -129,13 +129,23 @@ const vueApp = Vue.createApp({
       let done = false
       
       p.setup = () => {
-        p.createCanvas(p.windowWidth, 400)
+        p.createCanvas(p.windowWidth, p.windowHeight)
         p.noStroke()
         p.frameRate(FRAMERATE)
         p.background(BG_COLOR)
         p.noLoop()
         p.strokeCap(p.SQUARE)
         p.noSmooth()
+      }
+
+      p.windowResized = () => {
+        p.resizeCanvas(p.windowWidth, p.windowHeight)
+
+        // All elements need to be rerendered.
+        this.sortState.arr.forEach((val, idx) => {
+          if (!(idx in this.sortState.colors))
+            this.sortState.colors[idx] = val
+        })
       }
     
       p.draw = () => {
