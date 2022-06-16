@@ -56,3 +56,6 @@ String.prototype.simpleHashCode = function() {
   return hash | 0
 }
 
+Object.isEmpty = o => {
+  return Object.keys(o).length === 0
+}

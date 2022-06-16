@@ -46,6 +46,18 @@ class Data {
     return averages
   }
 
+  deleteSortRows([arrSize, initMethod, sortName]) {
+    delete this.data[arrSize][initMethod][sortName]
+    
+    if (Object.isEmpty(this.data[arrSize][initMethod]))
+      delete this.data[arrSize][initMethod]
+    
+    if (Object.isEmpty(this.data[arrSize]))
+      delete this.data[arrSize]
+
+    localStorage.setItem(Data.LOCAL_STORAGE_KEY, JSON.stringify(this.data))
+  }
+
   deleteAll() {
     this.data = {}
     localStorage.removeItem(Data.LOCAL_STORAGE_KEY)
@@ -54,4 +66,6 @@ class Data {
   nonempty() {
     return Object.keys(this.data).length > 0
   }
+
+  
 }

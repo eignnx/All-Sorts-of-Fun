@@ -1,3 +1,8 @@
+* {
+  font-family: cursive, sans-serif;
+  font-variant: small-caps;
+}
+
 html, body {
   height: 100%;
   width: 100%;
@@ -23,6 +28,13 @@ button {
   padding-inline: 1em;
   padding-block: 0.35em;
   margin: 0.75em;
+  
+  transition-duration: 0.05s;
+}
+
+button:hover {
+  scale: 110%;
+  rotate: -5deg;
 }
 
 details {
@@ -35,10 +47,53 @@ details > * {
 }
 
 summary {
-  font-family: Helvetica, Arial, sans-serif;
   font-size-adjust: larger;
   font-weight: bold;
-  font-variant: small-caps;
+  
+  display: flex;
+  justify-content: space-between;
+}
+
+.success {
+  background-color: lightgreen;
+  color: darkgreen;
+  border-color: darkgreen;
+  font-weight: bold;
+  border-radius: 0.5em;
+}
+
+.success:hover {
+  background-color: #c5f5c5;
+}
+
+.warning {
+  background-color: gold;
+  color: darkgoldenrod;
+  border-color: darkgoldenrod;
+  font-weight: bold;
+  border-radius: 0.5em;
+}
+
+.warning:hover {
+  background-color: #ffbc31;
+}
+
+.danger {
+  background-color: darkred;
+  color: pink;
+  border-color: pink;
+  font-weight: bold;
+  border-radius: 0.5em;
+}
+
+.danger:hover {
+  background-color: #d70000;
+}
+
+.delete-sort-btn {
+  padding-inline: 1em;
+  padding-block: 0;
+  margin: 0.5em;
 }
 
 th, tf {

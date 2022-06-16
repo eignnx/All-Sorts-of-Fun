@@ -43,7 +43,7 @@ const vueApp = Vue.createApp({
     </div>
   
     <div>
-      <button @click="startStop">
+      <button @click="startStop" :class="running ? 'warning' : 'success'">
         {{ running ? "Stop" : "Start" }}
       </button>
     </div>
@@ -54,7 +54,15 @@ const vueApp = Vue.createApp({
       <details v-for="(sorts, initMethod) in initMethods" open>
         <summary>{{ initMethod }}</summary>
         <details v-for="(runs, sortName) in sorts" open>
-          <summary>{{ sortName }}</summary>
+          <summary>
+            {{ sortName }}
+            <button
+              @click="runData.deleteSortRows([arrSize, initMethod, sortName])"
+              class="delete-sort-btn danger"
+            >
+              Delete
+            </button>
+          </summary>
           <table>
             <thead>
               <tr>
@@ -70,7 +78,7 @@ const vueApp = Vue.createApp({
             </tbody>
             <tfoot v-if="runs.length > 1">
               <tr>
-                <th>Averages</th>
+                <th :colspan="Object.keys(runs[0]).length">Averages</th>
               </tr>
               <tr>
                 <td v-for="(avg, attr) in runData.getAverages(arrSize, initMethod, sortName)">{{avg}}</td>
@@ -80,7 +88,13 @@ const vueApp = Vue.createApp({
         </details>
       </details>
     </details>
-    <button v-if="runData.nonempty()" @click="deleteAllRunData">Clear All Data</button>
+    <button
+      v-if="runData.nonempty()"
+      @click="deleteAllRunData"
+      class="danger"
+    >
+      Clear All Data
+    </button>
   </section>
 </section>
   `,
