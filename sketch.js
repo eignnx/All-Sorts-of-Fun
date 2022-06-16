@@ -250,7 +250,7 @@ const vueApp = Vue.createApp({
       const eraseBar = idx => {
         if (idx < 0 || idx >= arr.length) return
         const ele = arr[idx]
-        const x = idx * w
+        const x = idx * w + w/2
         const h = ele * p.height
         
         // Erase this element and half of each of its neighbors
@@ -264,7 +264,7 @@ const vueApp = Vue.createApp({
         if (idx < 0 || idx >= arr.length) return
         const ele = arr[idx]
         const h = ele * p.height
-        const x = idx * w
+        const x = idx * w + w/2
         const c = this.sortState.colors[idx] ?? null
         
         if (c === null) {
