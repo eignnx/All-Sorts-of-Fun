@@ -146,6 +146,9 @@ const vueApp = Vue.createApp({
           if (!(idx in this.sortState.colors))
             this.sortState.colors[idx] = val
         })
+
+        if (!p.isLooping())
+          this.displayArray(p, this.sortState.arr)
       }
     
       p.draw = () => {
