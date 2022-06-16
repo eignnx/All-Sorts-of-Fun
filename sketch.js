@@ -12,12 +12,14 @@ const vueApp = Vue.createApp({
   <section id="ui-section">
     <div>
       <label for="arr-size">Array Size</label>
+      <button @click="arrSize = Math.floor(arrSize/2)">x0.5</button>
       <input
         id="arr-size"
         type="number"
         required
         v-model.number="arrSize"
       >
+      <button @click="arrSize *= 2">x2</button>
     </div>
     
     <div>
