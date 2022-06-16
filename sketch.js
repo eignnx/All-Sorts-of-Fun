@@ -10,7 +10,7 @@ const vueApp = Vue.createApp({
   template: `
 <section>
   <section id="ui-section">
-    <div>
+    <div class="input-row">
       <label for="arr-size">Array Size</label>
       <button @click="arrSize = Math.floor(arrSize/2)">x0.5</button>
       <input
@@ -22,7 +22,7 @@ const vueApp = Vue.createApp({
       <button @click="arrSize *= 2">x2</button>
     </div>
     
-    <div>
+    <div class="input-row">
       <label for="alg-select">Sort Algorithm</label>
       <select
         id="alg-select"
@@ -32,7 +32,7 @@ const vueApp = Vue.createApp({
       </select>
     </div>
   
-    <div>
+    <div class="input-row">
       <label for="init-method-select">Array Initialization Method</label>
       <select
         id="init-method-select"

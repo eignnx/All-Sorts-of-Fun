@@ -24,10 +24,20 @@ label {
   margin-right: 1em;
 }
 
+input[type="number"] {
+  width: 6em;
+  height: 2.5em;
+}
+
+.input-row > select {
+  width: 100%;
+}
+
 button {
   padding-inline: 1em;
   padding-block: 0.35em;
   margin: 0.75em;
+  font-weight: bold;
   
   transition-duration: 0.05s;
 }
@@ -58,7 +68,6 @@ summary {
   background-color: lightgreen;
   color: darkgreen;
   border-color: darkgreen;
-  font-weight: bold;
   border-radius: 0.5em;
 }
 
@@ -70,7 +79,6 @@ summary {
   background-color: gold;
   color: darkgoldenrod;
   border-color: darkgoldenrod;
-  font-weight: bold;
   border-radius: 0.5em;
 }
 
@@ -82,7 +90,6 @@ summary {
   background-color: darkred;
   color: pink;
   border-color: pink;
-  font-weight: bold;
   border-radius: 0.5em;
 }
 
