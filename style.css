@@ -21,7 +21,8 @@ label {
 
 button {
   padding-inline: 1em;
-  padding-block: 0.5em;
+  padding-block: 0.35em;
+  margin: 0.75em;
 }
 
 details {

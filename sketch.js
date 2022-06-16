@@ -48,7 +48,7 @@ const vueApp = Vue.createApp({
       </button>
     </div>
   </section>
-  <section>
+  <section v-if="runData !== null">
     <details v-for="(initMethods, arrSize) in runData.data" open>
       <summary>{{ arrSize }} elements</summary>
       <details v-for="(sorts, initMethod) in initMethods" open>
@@ -80,6 +80,7 @@ const vueApp = Vue.createApp({
         </details>
       </details>
     </details>
+    <button v-if="runData.nonempty()" @click="deleteAllRunData">Clear All Data</button>
   </section>
 </section>
   `,
@@ -91,7 +92,7 @@ const vueApp = Vue.createApp({
     initMethod: "true random",
     running: false,
     messages: [],
-    runData: new Data(),
+    runData: null,
     sortState: null,
   }),
   
@@ -101,6 +102,8 @@ const vueApp = Vue.createApp({
   },
   
   mounted() {
+    this.runData = new Data()
+    
     const sketch = pParam => {
 
       // Let's just hold onto this...
@@ -174,10 +177,10 @@ const vueApp = Vue.createApp({
       this.runData.addRunResults(arrSize, initMethod, sortName, info)
     },
     
-    addMessage(msg) {
-      this.messages.push(msg)
+    deleteAllRunData() {
+      this.runData.deleteAll()
     },
-
+    
     getRunData() {
       return sliceObject(this.sortState, [
         "arrSize",

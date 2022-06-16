@@ -1,6 +1,5 @@
 class Data {
-  data = {}
-  // {
+  // data = {
   //   1024: {
   //     "true random": {
   //       "quicksort": [
@@ -9,7 +8,13 @@ class Data {
   //     }
   //   }
   // }
-  
+
+  static LOCAL_STORAGE_KEY = "Data.data"
+
+  constructor() {
+    this.data = JSON.parse(localStorage.getItem(Data.LOCAL_STORAGE_KEY)) ?? {}
+  }
+
   addRunResults(arrSize, initMethod, sortName, info) {
     setOrDefault(this.data, arrSize, {}, o1 => {
       setOrDefault(o1, initMethod, {}, o2 => {
@@ -18,6 +23,8 @@ class Data {
         })
       })
     })
+
+    localStorage.setItem(Data.LOCAL_STORAGE_KEY, JSON.stringify(this.data))
   }
 
   getAverages(arrSize, initMethod, sortName) {
@@ -37,5 +44,14 @@ class Data {
     }
 
     return averages
+  }
+
+  deleteAll() {
+    this.data = {}
+    localStorage.removeItem(Data.LOCAL_STORAGE_KEY)
+  }
+
+  nonempty() {
+    return Object.keys(this.data).length > 0
   }
 }
