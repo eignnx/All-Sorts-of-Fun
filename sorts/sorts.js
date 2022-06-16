@@ -79,4 +79,6 @@ const SORTS = {
   "pseudomedian quicksort": quicksort({selectPivot: pivotSelects.pseudomedian}),
   
   "Levimedian quicksort": quicksort({selectPivot: pivotSelects.Levimedian}),
+
+  "heapsort": heapsort,
 }
