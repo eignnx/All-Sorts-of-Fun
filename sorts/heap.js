@@ -62,23 +62,15 @@ class Heap {
       }
     }
   }
-  
-  #idx0to1(idx0) {
-    return idx0 + 1
-  }
-
-  #idx1to0(idx1) {
-    return idx1 - 1
-  }
 
   #children(parent) {
-    const left  = this.#idx1to0(2 * this.#idx0to1(parent) + 0)
-    const right = this.#idx1to0(2 * this.#idx0to1(parent) + 1)
+    const left  = 2 * parent + 1
+    const right = 2 * parent + 2
     return {left, right}
   }
   
   #parent(child) {
-    return this.#idx1to0(Math.floor(this.#idx0to1(child) / 2))
+    return Math.floor((child - 1) / 2)
   }
 }
 
