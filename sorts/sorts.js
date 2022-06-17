@@ -1,5 +1,7 @@
 const SORTS = {
   "basic bubblesort": basicBubble,
+
+  "bogosort": bogo,
   
   "optimized bubblesort": betterBubble,
   
