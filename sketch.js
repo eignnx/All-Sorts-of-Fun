@@ -195,8 +195,27 @@ const vueApp = Vue.createApp({
         loads: 0,
         stores: 0,
         swaps: 0,
+        cache: new LruCache(),
         arr: array,
       }
+    },
+
+    getRunData() {
+      const data = sliceObject(this.sortState, [
+        "arrSize",
+        "sortName",
+        "initMethod",
+        "comparisons",
+        //"loads",
+        //"stores",
+        //"swaps",
+      ])
+
+      data.memAccesses = this.sortState.cache.memAccesses
+      data.cacheHits = this.sortState.cache.hits
+      data.cacheMisses = this.sortState.cache.misses
+
+      return data
     },
 
     addRunData() {
@@ -208,18 +227,6 @@ const vueApp = Vue.createApp({
       this.runData.deleteAll()
     },
     
-    getRunData() {
-      return sliceObject(this.sortState, [
-        "arrSize",
-        "sortName",
-        "initMethod",
-        "comparisons",
-        "loads",
-        "stores",
-        "swaps",
-      ])
-    },
-
     startStop() {
       if (!this.running) {
         this.initSortRun()

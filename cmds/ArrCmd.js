@@ -8,6 +8,7 @@ class Load extends ArrCmd {
   }
 
   apply(state) {
+    state.cache.load(this.idx)
     state.loads += 1
     return state.arr[this.idx]
   }
@@ -22,6 +23,7 @@ class Store extends ArrCmd {
   }
 
   apply(state) {
+    state.cache.store(this.idx, this.value)
     state.stores += 1
     state.arr[this.idx] = this.value
   }
@@ -38,6 +40,11 @@ class Swap extends ArrCmd {
   }
 
   apply(state) {
+    state.cache.load(this.i)
+    state.cache.load(this.j)
+    state.cache.store(this.i, "blah")
+    state.cache.store(this.j, "blah")
+    
     state.swaps += 1
     state.loads += 2
     state.stores += 2

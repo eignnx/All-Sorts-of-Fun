@@ -3,16 +3,13 @@ class Cache {
   misses = 0
   cacheAccesses = 0
   memAccesses = 0
-  
-  load() { throw new Error("Not Implemented!") }
-  store(idx, value) { throw new Error("Not Implemented!") }
 }
 
 /// A fully-associative cache simulator that uses a "least
 /// recently used" eviction strategy.
 class LruCache extends Cache {
 
-  #data = []
+  data = []
 
   // Assume maximum array size supported = 2^16 = 16,536 words.
   addrSizeBits = 16
@@ -28,8 +25,8 @@ class LruCache extends Cache {
     this.cacheSizeBits = cacheSizeBits ?? this.cacheSizeBits
     this.cacheLineSizeBits = cacheLineSizeBits ?? this.cacheLineSizeBits
     
-    this.#calculateSizes()
-    this.#initData()
+    this.calculateSizes()
+    this.initData()
   }
 
   // addr = [ *, *, *, *, *, *, *, *, *, *, *, *, *, *, *, * ]
@@ -37,14 +34,14 @@ class LruCache extends Cache {
   //                      (11 bits)               (5 bits)
   // Cache size = 2^8 = 256 words
   // Cache slot count = Cache size / Cache line size = 2^8 / 2^5 = 2^3 = 8 slots
-  #calculateSizes() {
+  calculateSizes() {
     this.offsetBits = this.cacheLineSizeBits
     this.tagBits = this.addrSizeBits - this.offsetBits
     this.cacheSlotCountBits = this.cacheSizeBits - this.cacheLineSizeBits
   }
 
-  #initData() {
-    this.#data = Array(2 ** this.cacheSlotCountBits).fill().map((() => ({
+  initData() {
+    this.data = Array(2 ** this.cacheSlotCountBits).fill().map((() => ({
       tag: undefined,
       offset: undefined,
       valid: false,
@@ -53,22 +50,33 @@ class LruCache extends Cache {
     })))
   }
 
+  findMatches(addr) {
+    const tag = this.tag(addr)
+    const offset = this.offset(addr)
+    
+    function slotMatch([idx, slot]) {
+      return slot.valid && slot.tag === tag
+    }
+    
+    return [...this.data.entries()].filter(slotMatch).map(([idx, _]) => idx)
+  }
+
   load(addr) {
     this.cacheAccesses++
 
-    const matches = this.#findMatches(addr)
+    const matches = this.findMatches(addr)
     
     if (matches.length > 0) {
       this.hits++
       const idx = matches[0]
-      this.#data[idx].timestamp = this.cacheAccesses
+      this.data[idx].timestamp = this.cacheAccesses
     } else {
       this.misses++
-      const idx = this.#findEvictable()
-      const tag = this.#tag(addr)
-      const offset = this.#offset(addr)
+      const idx = this.findEvictable()
+      const tag = this.tag(addr)
+      const offset = this.offset(addr)
       this.memAccesses++ // Bring new data into cache.
-      this.#data[idx] = {
+      this.data[idx] = {
         tag,
         offset,
         valid: true,
@@ -81,21 +89,21 @@ class LruCache extends Cache {
   store(addr, value) {
     this.cacheAccesses++
 
-    const matches = this.#findMatches(addr)
+    const matches = this.findMatches(addr)
 
     if (matches.length > 0) {
       this.hits++
       const idx = matches[0]
-      this.#data[idx].timestamp = this.cacheAccesses
-      this.#data[idx].dirty = true
+      this.data[idx].timestamp = this.cacheAccesses
+      this.data[idx].dirty = true
     } else {
       this.misses++
-      const idx = this.#findEvictable()
-      const tag = this.#tag(addr)
-      const offset = this.#offset(addr)
+      const idx = this.findEvictable()
+      const tag = this.tag(addr)
+      const offset = this.offset(addr)
       // Gotta bring in new cache line.
       this.memAccesses++
-      this.#data[idx] = {
+      this.data[idx] = {
         tag,
         offset,
         valid: true,
@@ -105,31 +113,20 @@ class LruCache extends Cache {
     }
   }
 
-  #tag(addr) {
+  tag(addr) {
     return (addr & nBitMask(16)) >> this.offsetBits
   }
 
-  #offset(addr) {
+  offset(addr) {
     return (addr & nBitMask(16)) & nBitMask(this.offsetBits)
   }
 
-  #findMatches(addr) {
-    const tag = this.#tag(addr)
-    const offset = this.#offset(addr)
-    
-    function slotMatch([idx, slot]) {
-      return slot.valid && slot.tag === tag
-    }
-    
-    return [...this.#data.entries()].filter(slotMatch).map(([idx, _]) => idx)
-  }
-
-  #findEvictable() {
+  findEvictable() {
         
     // The (L)east (R)ecently (U)sed slot.
     let lru = { idx: -1, timestamp: Infinity }
     
-    for (const [idx, slot] of this.#data.entries()) {
+    for (const [idx, slot] of this.data.entries()) {
       // If there's an unused slot already, just use that one.
       if (!slot.valid) return idx
       else if (slot.timestamp < lru.timestamp) {
@@ -138,7 +135,7 @@ class LruCache extends Cache {
     }
 
     // Writeback if the slot is dirty.
-    if (this.#data[lru.idx].valid && this.#data[lru.idx].dirty)
+    if (this.data[lru.idx].valid && this.data[lru.idx].dirty)
       this.memAccesses++
     
     return lru.idx
