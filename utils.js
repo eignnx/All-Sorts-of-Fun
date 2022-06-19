@@ -59,3 +59,9 @@ String.prototype.simpleHashCode = function() {
 Object.isEmpty = o => {
   return Object.keys(o).length === 0
 }
+
+function assertEq(actual, expected) {
+  if (actual !== expected) {
+    throw new Error(`Assertion Failure: Expected ${expected}, got ${actual}`)
+  }
+}

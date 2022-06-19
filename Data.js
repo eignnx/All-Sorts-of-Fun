@@ -40,7 +40,7 @@ class Data {
     }
 
     for (const attr of Object.keys(averages)) {
-      averages[attr] = (averages[attr] / runs.length).toPrecision(3)
+      averages[attr] = averages[attr] / runs.length
     }
 
     return averages
