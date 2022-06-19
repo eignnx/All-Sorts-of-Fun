@@ -141,6 +141,26 @@ class LruCache extends Cache {
     return lru.idx
   }
 
+  get hitRate() {
+    return this.hits / this.cacheAccesses
+  }
+
+  get missRate() {
+    return this.misses / this.cacheAccesses
+  }
+
+  get memCacheRatio() {
+    return this.memAccesses / this.cacheAccesses
+  }
+
+  get cacheLineSize() {
+    return 2 ** this.cacheLineSizeBits
+  }
+
+  get cacheSlotCount() {
+    return 2 ** this.cacheSlotCountBits
+  }
+
   test() {
     
     for (let i = 0; i < 32; i++) {

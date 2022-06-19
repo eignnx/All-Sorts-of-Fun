@@ -72,7 +72,7 @@ const vueApp = Vue.createApp({
             <tbody>
               <tr v-for="run in runs">
                 <td v-for="(value, attr) in run">
-                  {{value}}
+                  {{value.toPrecision(4)}}
                 </td>
               </tr>
             </tbody>
@@ -81,7 +81,9 @@ const vueApp = Vue.createApp({
                 <th :colspan="Object.keys(runs[0]).length">Averages</th>
               </tr>
               <tr>
-                <td v-for="(avg, attr) in runData.getAverages(arrSize, initMethod, sortName)">{{avg}}</td>
+                <td v-for="(avg, attr) in runData.getAverages(arrSize, initMethod, sortName)">
+                  {{avg.toPrecision(4)}}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -211,9 +213,10 @@ const vueApp = Vue.createApp({
         //"swaps",
       ])
 
-      data.memAccesses = this.sortState.cache.memAccesses
-      data.cacheHits = this.sortState.cache.hits
-      data.cacheMisses = this.sortState.cache.misses
+      data["cache miss rate"] = this.sortState.cache.missRate
+      data["memory accesses"] = this.sortState.cache.memAccesses
+      // data["cache hits"] = this.sortState.cache.hits
+      // data["cache misses"] = this.sortState.cache.misses
 
       return data
     },
