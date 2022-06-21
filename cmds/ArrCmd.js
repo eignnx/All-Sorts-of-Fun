@@ -40,10 +40,12 @@ class Swap extends ArrCmd {
   }
 
   apply(state) {
-    state.cache.load(this.i)
-    state.cache.load(this.j)
-    state.cache.store(this.i, "blah")
-    state.cache.store(this.j, "blah")
+    if (this.i === this.j) return null
+    
+    const iVal = state.cache.load(this.i)
+    const jVal = state.cache.load(this.j)
+    state.cache.store(this.i, jVal)
+    state.cache.store(this.j, iVal)
     
     state.swaps += 1
     state.loads += 2

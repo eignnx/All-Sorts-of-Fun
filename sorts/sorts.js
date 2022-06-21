@@ -77,6 +77,8 @@ const SORTS = {
         return idx => (idx - start) % subLen === 0
       })
   }),
+
+  "dual pivot quicksort (edge pivots)": dualPivotQuicksort,
   
   "pseudomedian quicksort": quicksort({selectPivot: pivotSelects.pseudomedian}),
   

@@ -1,5 +1,6 @@
 const INIT_METHODS = N => ({
   "true random": () => Math.random(),
+  "random^2": () => { const x = Math.random(); return x * x },
   "perlin noise": () => perlinNoise(),
   "sorted": i => i/N,
   "nearly sorted": i => i/N + 10 * (Math.random() - 0.5) / N,
