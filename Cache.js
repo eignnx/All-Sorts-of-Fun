@@ -190,7 +190,7 @@ class LruCache extends Cache {
     assertEq(this.cacheAccesses, 32 + 8 + 1)
     assertEq(this.memAccesses, 1 + 7 + 2)
     
-    console.log("LruCache tests passed!")
+    console.info("LruCache tests passed!")
   }
 
   static test() {

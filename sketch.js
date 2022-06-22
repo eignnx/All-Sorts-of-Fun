@@ -198,7 +198,7 @@ const vueApp = Vue.createApp({
         stores: 0,
         swaps: 0,
         cache: new LruCache(),
-        arr: array,
+        arr: array.subslice(),
       }
     },
 
