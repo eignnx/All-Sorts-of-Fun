@@ -62,8 +62,6 @@ class Swap extends ArrCmd {
 NewlessCtor(
 class GetLength extends ArrCmd {
   apply(state) {
-    const stackLen = state.sliceStack.length
-    const topSlice = state.sliceStack[stackLen - 1]
-    return Math.floor((topSlice.end - topSlice.start) / topSlice.step)
+    return state.arr.length
   }
 })

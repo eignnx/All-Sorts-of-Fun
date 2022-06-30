@@ -144,7 +144,7 @@ const vueApp = Vue.createApp({
         p.resizeCanvas(p.windowWidth, p.windowHeight)
 
         // All elements need to be rerendered.
-        this.sortState.arr.forEach((val, idx) => {
+        this.sortState?.arr?.forEach((val, idx) => {
           if (!(idx in this.sortState.colors))
             this.sortState.colors[idx] = val
         })
