@@ -1,5 +1,6 @@
-function* dualPivotPartition(arr, start, end, [pivotA, pivotB]) {
-  if (end - start < 2) throw new Error("array too small")
+function* dualPivotPartition([pivotA, pivotB]) {
+  const len = yield getLength()
+  if (len < 2) throw new Error("array too small")
   
   const [pivotAVal, pivotBVal] = [yield load(pivotA), yield load(pivotB)]
   yield showFrame(new Pivot(pivotA), new Pivot(pivotB))
@@ -20,8 +21,8 @@ function* dualPivotPartition(arr, start, end, [pivotA, pivotB]) {
     pivot2Val = pivotAVal
   }
 
-  const tmpPivot1 = start
-  const tmpPivot2 = end - 1
+  const tmpPivot1 = 0
+  const tmpPivot2 = len - 1
   
   if (pivot1 === tmpPivot2 && pivot2 === tmpPivot1) {
     yield swap(pivot1, pivot2).thenShowFrame(new Pivot(tmpPivot1))
@@ -71,30 +72,31 @@ function* dualPivotPartition(arr, start, end, [pivotA, pivotB]) {
   return [finalPivot1, finalPivot2]
 }
 
-function* dualPivotQuicksort(arr, start=0, end=arr.length) {
-  const len = end - start
+function* dualPivotQuicksort() {
+  const len = yield getLength()
   if (len < 2) return
-  const [pivotA, pivotB] = [start, end - 1]
-  const [pivot1, pivot2] = yield* dualPivotPartition(arr, start, end, [pivotA, pivotB])
-  yield* dualPivotQuicksort(arr,      start, pivot1) // Section 1
-  yield* dualPivotQuicksort(arr, pivot1 + 1, pivot2) // Section 2
-  yield* dualPivotQuicksort(arr, pivot2 + 1,    end) // Section 3
+  const [pivotA, pivotB] = [0, len - 1]
+  const [pivot1, pivot2] = yield* dualPivotPartition([pivotA, pivotB])
+  yield* dualPivotQuicksort.inSubslice({                  until: pivot1}) // Section 1
+  yield* dualPivotQuicksort.inSubslice({from: pivot1 + 1, until: pivot2}) // Section 2
+  yield* dualPivotQuicksort.inSubslice({from: pivot2 + 1               }) // Section 3
 }
 
 function presortAwarePartition(
   // A function which returns true if the value at the relative index provided has been presorted relative to the pivot.
-  sliceIdxPresorted = (start, end) => idx => false, 
+  sliceIdxPresorted = len => idx => false, 
 ) {
-  return function*(arr, start, end, pivot) {
-    const idxPresorted = sliceIdxPresorted(start, end)
+  return function*(pivot) {
+    const len = yield getLength()
+    const idxPresorted = sliceIdxPresorted(len)
     
     const pivotVal = yield load(pivot)
-    yield swap(start, pivot).thenShowFrame()
+    yield swap(0, pivot).thenShowFrame()
     const oldPivot = pivot
-    const tmpPivot = start
+    const tmpPivot = 0
     
-    let lo = start + 1
-    let hi = end - 1
+    let lo = 1
+    let hi = len - 1
   
     function* loOnCorrectSideOfPivot() {
       if (idxPresorted(lo)) return lo <= oldPivot
@@ -149,22 +151,24 @@ const classicPartition = presortAwarePartition()
 function quicksort({
   selectPivot,
   partition = classicPartition,
-  haltCriterion = len => (len <= 1),
-  postHaltAction = function*(arr, start, end) {}
+  haltCriterion = len => (len < 2),
+  postHaltAction = function*() {}
 }) {
   if (selectPivot === undefined)
-    throw "A value for `selectPivot` must be provided to `quicksort`!"
+    throw new Error("A value for `selectPivot` must be provided to `quicksort`!")
   
-  function* qs(arr, start=0, end=arr.length) {
-    if (haltCriterion(end - start)) {
-      return yield* postHaltAction(arr, start, end)
+  function* qs() {
+    const len = yield getLength()
+    
+    if (haltCriterion(len)) {
+      return yield* postHaltAction()
     }
-    const pivotIdx = yield* selectPivot(arr, start, end)
+    const pivotIdx = yield* selectPivot()
     yield showFrame(new Pivot(pivotIdx))
-    const newPivotIdx = yield* partition(arr, start, end, pivotIdx)
+    const newPivotIdx = yield* partition(pivotIdx)
     yield showFrame(new Pivot(newPivotIdx))
-    yield* qs(arr, start, newPivotIdx)
-    yield* qs(arr, newPivotIdx+1, end)
+    yield* qs.inSubslice({until: newPivotIdx})
+    yield* qs.inSubslice({from: newPivotIdx + 1})
   }
   
   return qs

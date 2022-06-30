@@ -1,4 +1,4 @@
-function* basicBubble(arr) {
+function* basicBubble() {
   const len = yield getLength()
   
   if (len < 2) return

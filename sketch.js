@@ -1,7 +1,6 @@
 const init_bg_color = "#e8f7ff"
 const FRAMERATE = 100
 
-let array = null
 let p = null
 let sorter = null
 let perlinNoiseScale = 0.06
@@ -164,9 +163,11 @@ const vueApp = Vue.createApp({
           cmd = status.value
 
           if (!done) {
-            // nextSendValue will contain a value computed (if any) by a Cmd's
+            // `nextSendValue` will contain a value computed (if any) by a Cmd's
             // apply method, and fed back to the generator. `nextSendValue`
             // will be the value returned by a `yield` expression.
+            // `nextSendValue` has "global" scope because values might need to
+            // be sent between frames (calls of the `draw` function).
             nextSendValue = cmd.apply(this.sortState)
           }
         }
@@ -187,7 +188,7 @@ const vueApp = Vue.createApp({
   },
 
   methods: {
-    resetSortState() {
+    resetSortState(arr) {
       this.sortState = {
         arrSize: this.arrSize,
         sortName: this.sortName,
@@ -198,7 +199,7 @@ const vueApp = Vue.createApp({
         stores: 0,
         swaps: 0,
         cache: new LruCache(),
-        arr: array.subslice(),
+        arr: arr.subslice(),
       }
     },
 
@@ -249,9 +250,9 @@ const vueApp = Vue.createApp({
 
       this.n = this.arrSize
       const selectedInitMethod = INIT_METHODS(this.n)[this.initMethod]
-      array = randomArray(this.n, selectedInitMethod)
-      sorter = SORTS[this.sortName](array)
-      this.resetSortState()
+      const arr = randomArray(this.n, selectedInitMethod)
+      this.resetSortState(arr)
+      sorter = SORTS[this.sortName]()
     },
     
     displayArray(p, arr) {

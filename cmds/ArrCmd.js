@@ -16,6 +16,8 @@ class Load extends ArrCmd {
 
 NewlessCtor(
 class Store extends ArrCmd {
+  static color = "#ff6200" // Bright orange
+  
   constructor(idx, value) {
     super()
     this.idx = idx
@@ -25,6 +27,7 @@ class Store extends ArrCmd {
   apply(state) {
     state.cache.store(this.idx, this.value)
     state.stores += 1
+    state.colors[this.idx] = Store.color
     state.arr[this.idx] = this.value
   }
 })
@@ -62,8 +65,6 @@ class Swap extends ArrCmd {
 NewlessCtor(
 class GetLength extends ArrCmd {
   apply(state) {
-    const stackLen = state.sliceStack.length
-    const topSlice = state.sliceStack[stackLen - 1]
-    return Math.floor((topSlice.end - topSlice.start) / topSlice.step)
+    return state.arr.length
   }
 })

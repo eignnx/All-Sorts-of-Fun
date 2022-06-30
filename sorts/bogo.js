@@ -1,7 +1,8 @@
-function* bogo(_arr, start=0, end=_arr.length) {
+function* bogo() {
+  const len = yield getLength()
   
   function* notSorted() {
-    for (let idx = start; idx < end - 1; idx++) {
+    for (let idx = start; idx < len - 1; idx++) {
       if (yield gt(load(idx), load(idx+1))) { // arr[idx] > arr[idx+1]
         return false
       }
@@ -10,8 +11,8 @@ function* bogo(_arr, start=0, end=_arr.length) {
   }
 
   function* randomize() {
-    for (let boundary = start; boundary < end; boundary++) {
-      const randomIdx = Math.floor(Math.random() * (end - boundary) + boundary)
+    for (let boundary = start; boundary < len; boundary++) {
+      const randomIdx = Math.floor(Math.random() * (len - boundary) + boundary)
       yield swap(boundary, randomIdx)
     }
   }

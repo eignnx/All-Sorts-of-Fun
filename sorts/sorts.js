@@ -71,11 +71,8 @@ const SORTS = {
   
   "quicksort (median of sqrt(len) via optimal shell) optimized":
     quicksort({
-      selectPivot: steppedSortMedian(steppedShellSort(optimalGapSeq), Math.sqrt),
-      partition: presortAwarePartition((start, end) => {
-        const subLen = Math.floor(Math.sqrt(end - start))
-        return idx => (idx - start) % subLen === 0
-      })
+      selectPivot: steppedSortMedian(shellSort(optimalGapSeq), Math.sqrt),
+      partition: presortAwarePartition(len => idx => idx % Math.floor(Math.sqrt(len)) === 0)
   }),
 
   "dual pivot quicksort (edge pivots)": dualPivotQuicksort,

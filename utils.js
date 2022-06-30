@@ -14,7 +14,9 @@ function* mapYielded(coro, fn) {
   }
 }
 
-Object.getPrototypeOf(function*(){}).thenDoPass = function(secondGeneratorFn) {
+const GeneratorFnPrototype = Object.getPrototypeOf(function*(){})
+
+GeneratorFnPrototype.thenDoPass = function(secondGeneratorFn) {
   const firstGeneratorFn = this
   return function*(...args) {
     yield* firstGeneratorFn(...args)
@@ -61,7 +63,7 @@ Object.isEmpty = o => {
 }
 
 function assertEq(actual, expected) {
-  if (actual !== expected) {
+  if (actual != expected) {
     throw new Error(`Assertion Failure: Expected ${expected}, got ${actual}`)
   }
 }
@@ -99,25 +101,37 @@ function interpretRange(range, len) {
 }
 
 Array.prototype.subslice = function(range={}) {
-  const {start, end, step} = interpretRange(range, this.length)
 
-  return new Proxy(this, {
-    get(underlying, prop, receiver) {
+  const subsliceSetImpl = ({start, end, step, len}) => (underlying, prop, value, receiver) => {
+    if (typeof prop === "string" && !Number.isNaN(parseInt(prop))) {
+        let relIdx = parseInt(prop)
+        if (relIdx < 0) relIdx += len
+        const idx = step * relIdx + start
+        console.log(`${idx} = ${step} * ${relIdx} + ${start}, (len == ${len})`)
+        if (idx >= underlying.length) throw new Error(`Index out of bounds: ${relIdx} >= ${len}`)
+      underlying[idx] = value
+    } else {
+      underlying[prop] = value
+    }
+    return true
+  }
+
+  const subsliceGetImpl = ({start, end, step, len}) => (underlying, prop, receiver) => {
       if (prop === "length") {
-        return Math.floor((end - start) / step)
+        return len
       }
 
       if (typeof prop === "string" && !Number.isNaN(parseInt(prop))) {
         let relIdx = parseInt(prop)
-        if (relIdx < 0) relIdx += receiver.length
+        if (relIdx < 0) relIdx += len
         const idx = step * relIdx + start
-        if (idx >= underlying.length) throw new Error(`Index out of bounds: ${relIdx} >= ${receiver.length}`)
+        if (idx >= underlying.length) throw new Error(`Index out of bounds: ${relIdx} >= ${len}`)
         return underlying[idx]
       }
       
       if (prop === Symbol.iterator) {
       	return function*() {
-        	for (let i = 0; i < receiver.length; i++) {
+        	for (let i = 0; i < len; i++) {
           	yield receiver[i]
           }
         }
@@ -128,33 +142,43 @@ Array.prototype.subslice = function(range={}) {
         	return [...receiver].toString()
         }
       }
+    
+      if (prop === "subslice") {
+        return function(range={}) {
+          const {start, end, step} = interpretRange(range, this.length)
+          const len = Math.ceil((end - start) / step)
+          return new Proxy(receiver, {
+            get: subsliceGetImpl({start, end, step, len}),
+            set: subsliceSetImpl({start, end, step, len}),
+          })
+        }
+      }
 
       return underlying[prop]
-    },
+  }
 
-    set(underlying, prop, value, receiver) {
-      if (typeof prop === "string" && !Number.isNaN(parseInt(prop))) {
-        const relIdx = parseInt(prop)
-        const idx = step * relIdx + start
-        if (idx >= underlying.length) throw new Error(`Index out of bounds: ${relIdx} >= ${receiver.length}`)
-        underlying[idx] = value
-      } else {
-        underlying[prop] = value
-      }
-      return true
-    }
+  const {start, end, step} = interpretRange(range, this.length)
+  const len = Math.ceil((end - start) / step)
+  return new Proxy(this, {
+    get: subsliceGetImpl({start, end, step, len}),
+    set: subsliceSetImpl({start, end, step, len}),
   })
 }
 
-// Tests:
-const a0 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14].subslice()
-assertEq(a0[5], 5)
-assertEq(a0[-1], 14)
-const a1 = a0.subslice({from: 1, step: 2}) // [1,3,5,7,9,11,13]
-assertEq(a1[2], 5)
-assertEq(a1[-1], 13)
-const a2 = a1.subslice({from: 2, step: 3}) // [5,11]
-assertEq(a2[0], 5)
-assertEq(a2[1], 11)
+function* inSubslice(range, genFn) {
+  const oldArr = yield unsafeGetArr()
+  const newArr = oldArr.subslice(range)
+  console.log("old arr:", [...oldArr])
+  console.log("subslice:", [...newArr])
 
-console.info("subslice tests passed!")
+  yield unsafeSetArr(newArr)
+  const ret = yield* genFn()
+  yield unsafeSetArr(oldArr)
+  
+  return ret
+}
+
+GeneratorFnPrototype.inSubslice = function*(range) {
+  return yield* inSubslice(range, this)
+}
+

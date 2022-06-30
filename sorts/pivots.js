@@ -1,13 +1,13 @@
-function* pseudomedian(arr, start=0, end=arr.length) {
-  const len = end - start
-  if (len < 3) return start
+function* pseudomedian() {
+  const len = yield getLength()
+  if (len < 3) return 0
   
   const w = Math.ceil(len / 2) // window width
   
-  let winMin  = {value: yield load(start), idx: start}
-  let winMax = {value: yield load(start), idx: start}
+  let winMin  = {value: yield load(start), idx: 0}
+  let winMax = {value: yield load(start), idx: 0}
   
-  for (let idx = start + 1; idx < w; idx++) {
+  for (let idx = 1; idx < w; idx++) {
     yield showFrame(new Window(start, idx))
     const value = yield load(idx)
     if (yield lt(value, winMin.value)) {
@@ -21,7 +21,7 @@ function* pseudomedian(arr, start=0, end=arr.length) {
   let biggestMin = {...winMin}
   let smallestMax = {...winMax}
   
-  for (let idx = start + w; idx < end; idx++) {
+  for (let idx = w; idx < len; idx++) {
     const newest = yield load(idx)
     
     if (yield gt(newest, winMax.value)) {
@@ -48,9 +48,9 @@ function* pseudomedian(arr, start=0, end=arr.length) {
     return Math.abs(pseudomed - value)
   }
   
-  let closest = {diff: yield* getDiff(start), idx: start}
+  let closest = {diff: yield* getDiff(0), idx: 0}
   
-  for (let idx = start + 1; idx < end; idx++) {
+  for (let idx = 1; idx < len; idx++) {
     const diff = yield* getDiff(idx)
     if (yield lte(diff, closest.diff)) {
       closest = {diff, idx}
@@ -62,21 +62,22 @@ function* pseudomedian(arr, start=0, end=arr.length) {
   return closest.idx
 }
 
-function* medianOfThree(arr, start, end) {
-  if (end-start < 3) return start
+function* medianOfThree() {
+  const len = yield getLength()
+  if (len < 3) return 0
   
-  const mid = Math.floor((start + end-1) / 2)
+  const mid = Math.floor(len / 2)
 
-  const v1 = yield load(start)
+  const v1 = yield load(0)
   const v2 = yield load(mid)
-  const v3 = yield load(end - 1)
+  const v3 = yield load(len - 1)
   
-  yield showFrame(...[start, mid, end-1].map(i => new Scan(i)))
+  yield showFrame(...[0, mid, len-1].map(i => new Scan(i)))
   
   // `v1` is median
   if ((yield gte(v1, v2)) && (yield lte(v1, v3))
    || (yield gte(v1, v3)) && (yield lte(v1, v2)))
-    return start
+    return 0
   
   // `v2` is median
   if ((yield gte(v2, v1)) && (yield lte(v2, v3))
@@ -87,12 +88,12 @@ function* medianOfThree(arr, start, end) {
   // if (v3 >= v2 && v3 <= v1 ||
   //     v3 >= v1 && v3 <= v2)
   else
-    return end-1
+    return len-1
 }
 
-function steppedSortMedian(mkSteppedSort, stepSizeFn = len => 3) {
-  return function*(arr, start, end) {
-    const len = end - start
+function steppedSortMedian(sort, stepSizeFn = len => 3) {
+  return function*() {
+    const len = yield getLength()
     const step = Math.floor(stepSizeFn(len))
     const steps = Math.floor(len / step)
 
@@ -101,44 +102,43 @@ function steppedSortMedian(mkSteppedSort, stepSizeFn = len => 3) {
       .map(idx => new Scan(idx))
 
     yield* mapYielded(
-      mkSteppedSort(step)(arr, start, end),
+      sort.inSubslice({step}),
       cmd => (cmd instanceof ShowFrame) ? showFrame(cmd, ...scans) : cmd
     )
 
     const middleStepIdx = Math.floor(steps / 2)
-    return step * middleStepIdx + start
+    return step * middleStepIdx
   }
 }
 
 const pivotSelects = {
-  simple: function*(_arr, start, _end) {
-    return start
-  },
+  simple: function*() { return 0 },
 
   medianOfThree,
 
-  medianOfSqrtLenInsertion: steppedSortMedian(steppedInsertionSort, Math.sqrt),
-  medianOfSqrtLenShell: gapSeq => steppedSortMedian(steppedShellSort(gapSeq), Math.sqrt),
+  medianOfSqrtLenInsertion: steppedSortMedian(insertionSort, Math.sqrt),
+  medianOfSqrtLenShell: gapSeq => steppedSortMedian(shellSort(gapSeq), Math.sqrt),
   
   pseudomedian,
 
-  random: function*(_arr, start, end) {
-    return Math.floor((end - start) * Math.random()) + start
+  random: function*() {
+    return Math.floor((yield getLength()) * Math.random())
   },
 
-  Levimedian: function* (arr, start, end) {
+  Levimedian: function*() {
+    const len = yield getLength()
     let sum = 0
     
-    for (let idx = start; idx < end; idx++) {
+    for (let idx = 0; idx < len; idx++) {
       sum += yield load(idx)
       
       yield showFrame(new Scan(idx))
     }
 
-    let mean = sum/(end - start)
-    let median = {value: yield load(start), idx: start}
+    let mean = sum / len
+    let median = {value: yield load(0), idx: 0}
     
-    for (let idx = start; idx < end; idx++) {
+    for (let idx = 0; idx < len; idx++) {
       const value = yield load(idx)
       if (Math.abs(value - mean) < Math.abs(median.value - mean)) {
         median = {value, idx}

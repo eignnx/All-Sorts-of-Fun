@@ -74,10 +74,10 @@ class Heap {
   }
 }
 
-  function* heapsort(arr, start=0, end=arr.length) {
-    const h = new Heap(end - start)
-    yield* h.heapify()
-    while (h.nonempty()) {
-      yield* h.swapRemoveTop()
-    }
+function* heapsort() {
+  const h = new Heap(yield getLength())
+  yield* h.heapify()
+  while (h.nonempty()) {
+    yield* h.swapRemoveTop()
   }
+}
