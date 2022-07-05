@@ -1,28 +1,3 @@
-function insertionSort(arr, start, end) {
-  // function* insertionSort(arr, start=0, end=arr.length) {
-  //   for (let sortedEnd = start; sortedEnd < end; sortedEnd++) {
-  //     yield showFrame(new Bound(sortedEnd))
-  //     for (let idx = sortedEnd; idx > start; idx--) {
-  //       if (yield gt(yield load(idx - 1), yield load(idx))) {
-  //         yield swap(idx-1, idx)
-  //       } else {
-  //         yield showFrame(new Scan(idx-1), new Scan(idx))
-  //         break
-  //       }
-  //     }
-  //   }
-  // }
-  return steppedInsertionSort(1)(arr, start, end)
-}
-
-function genTakeWhile(g, predicate) {
-  let vs = []
-  while (true) {
-    const {done, value} = g.next()
-    if (done || !predicate(value)) return vs
-    vs.push(value)
-  }
-}
 
 // See https://oeis.org/A102549
 function* optimalGapSeq() {
@@ -63,15 +38,6 @@ function gappedSteppedSortPass(gap, step=1) {
   }
 }
 
-function steppedInsertionSort(step) {
-  
-  function* gapSeq() {
-    yield 1 // Since gap == 1, this is regular insertion sort.
-  }
-  
-  return steppedShellSort(gapSeq)(step)
-}
-
 function steppedShellSort(gapSeq) {
   return function(step) {
     return function*(arr, start=0, end=arr.length) {
@@ -88,4 +54,30 @@ function steppedShellSort(gapSeq) {
 
 function shellSort(gapSeq) {
   return steppedShellSort(gapSeq)(1)
+}
+
+function steppedInsertionSort(step) {
+  
+  function* gapSeq() {
+    yield 1 // Since gap == 1, this is regular insertion sort.
+  }
+  
+  return steppedShellSort(gapSeq)(step)
+}
+
+function insertionSort(arr, start, end) {
+  // function* insertionSort(arr, start=0, end=arr.length) {
+  //   for (let sortedEnd = start; sortedEnd < end; sortedEnd++) {
+  //     yield showFrame(new Bound(sortedEnd))
+  //     for (let idx = sortedEnd; idx > start; idx--) {
+  //       if (yield gt(yield load(idx - 1), yield load(idx))) {
+  //         yield swap(idx-1, idx)
+  //       } else {
+  //         yield showFrame(new Scan(idx-1), new Scan(idx))
+  //         break
+  //       }
+  //     }
+  //   }
+  // }
+  return steppedInsertionSort(1)(arr, start, end)
 }

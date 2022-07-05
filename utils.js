@@ -14,6 +14,15 @@ function* mapYielded(coro, fn) {
   }
 }
 
+function genTakeWhile(g, predicate) {
+  let vs = []
+  while (true) {
+    const {done, value} = g.next()
+    if (done || !predicate(value)) return vs
+    vs.push(value)
+  }
+}
+
 Object.getPrototypeOf(function*(){}).thenDoPass = function(secondGeneratorFn) {
   const firstGeneratorFn = this
   return function*(...args) {
